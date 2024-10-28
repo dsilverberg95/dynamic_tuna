@@ -1,6 +1,5 @@
 from .n_ei_functions import *
 from lightgbm import LGBMRegressor
-import numpy as np
 import optuna
 from optuna.samplers import BaseSampler, TPESampler
 from sklearn.ensemble import RandomForestRegressor

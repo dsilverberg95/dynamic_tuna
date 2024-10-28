@@ -19,7 +19,7 @@ def linear(n, a=0, b=1, from_start=True):
     else:
         n_ei_candidates = b - (a * (n - 1))
 
-    return max(1, n_ei_candidates)
+    return max(1, round(n_ei_candidates))
 
 
 def polynomial(n, a=0, b=1, c=1, from_start=True):
@@ -41,7 +41,7 @@ def polynomial(n, a=0, b=1, c=1, from_start=True):
     else:
         n_ei_candidates = b - (a * ((n - 1) ** c))
 
-    return max(1, n_ei_candidates)
+    return max(1, round(n_ei_candidates))
 
 
 
