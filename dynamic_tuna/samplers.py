@@ -10,7 +10,6 @@ from skopt.learning.gaussian_process.kernels import Matern
 from skopt.space import Real, Integer, Categorical
 
 
-
 class Sampler(BaseSampler):
     def __init__(self, search_space, n_ei_function, a=0, b=1, from_start=True, n_initial_points=10):
         """
