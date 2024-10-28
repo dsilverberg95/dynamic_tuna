@@ -11,7 +11,7 @@ from skopt.space import Real, Integer, Categorical
 
 
 
-class BaseSampler(BaseSampler):
+class Sampler(BaseSampler):
     def __init__(self, search_space, n_ei_function, a=0, b=1, from_start=True, n_initial_points=10):
         """
         Parameters:
@@ -42,9 +42,11 @@ class BaseSampler(BaseSampler):
 
     def _convert_to_skopt_dimension(self, name, dist):
         if isinstance(dist, optuna.distributions.UniformDistribution):
-            return Real(dist.low, dist.high, name=name)
+            prior = "log-uniform" if getattr(dist, "log", False) else "uniform"
+            return Real(dist.low, dist.high, prior=prior, name=name)
         elif isinstance(dist, optuna.distributions.IntUniformDistribution):
-            return Integer(dist.low, dist.high, name=name)
+            prior = "log-uniform" if getattr(dist, "log", False) else "uniform"
+            return Integer(dist.low, dist.high, prior=prior, name=name)
         elif isinstance(dist, optuna.distributions.CategoricalDistribution):
             return Categorical(dist.choices, name=name)
         raise ValueError("Unsupported distribution type.")
@@ -58,7 +60,7 @@ class BaseSampler(BaseSampler):
 
 
 
-class GBTSampler(BaseSampler):
+class GBTSampler(Sampler):
     def __init__(self, search_space, n_ei_function, a=0, b=1, from_start=True, n_initial_points=10):
         super().__init__(search_space, n_ei_function, a, b, from_start, n_initial_points)
         self.optimizer = self._initialize_optimizer(LGBMRegressor(n_estimators=100))
@@ -78,7 +80,7 @@ class GBTSampler(BaseSampler):
     
 
 
-class RandomForestSampler(BaseSampler):
+class RandomForestSampler(Sampler):
     def __init__(self, search_space, n_ei_function, a=0, b=1, from_start=True, n_initial_points=10):
         super().__init__(search_space, n_ei_function, a, b, from_start, n_initial_points)
         self.optimizer = self._initialize_optimizer(RandomForestRegressor(n_estimators=100))
@@ -98,7 +100,7 @@ class RandomForestSampler(BaseSampler):
     
 
 
-class GPSampler(BaseSampler):
+class GPSampler(Sampler):
     def __init__(self, search_space, n_ei_function, a=0, b=1, from_start=True, n_initial_points=10):
         super().__init__(search_space, n_ei_function, a, b, from_start, n_initial_points)
         self.optimizer = self._initialize_optimizer(GaussianProcessRegressor(kernel=Matern(nu=2.5)))
@@ -118,7 +120,7 @@ class GPSampler(BaseSampler):
     
 
 
-class TPESampler(BaseSampler, TPESampler):
+class TPESampler(Sampler, TPESampler):
     def __init__(self, search_space, n_ei_function, a=0, b=1, from_start=True, **kwargs):
         super().__init__(search_space, n_ei_function, a, b, from_start)
         TPESampler.__init__(self, **kwargs)  # Initialize Optuna's TPESampler

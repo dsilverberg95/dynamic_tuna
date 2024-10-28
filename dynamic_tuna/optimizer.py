@@ -1,6 +1,6 @@
 import optuna
 import optuna.visualization as vis
-from dynamic_tuna.samplers import *
+from samplers import *
 
 
 
