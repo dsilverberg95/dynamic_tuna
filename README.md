@@ -1,6 +1,6 @@
-# 📊 Dynamic Tuna: Advanced Bayesian Optimization Library
+# Dynamic Tuna: Flexible Bayesian Optimization Library
 
-**Dynamic Tuna** is a flexible Bayesian optimization library designed to adapt to various optimization needs with dynamic sampling strategies. Built on top of Optuna and Scikit-Optimize, it supports Gaussian Process, Random Forest, and Gradient Boosted Tree samplers with customizable exploration-exploitation controls.
+**Dynamic Tuna** is a Bayesian optimization library built on Optuna and scikit-optimize that supports customizable exploration-exploitation control. The supported samplers (surrogate models) are Gaussian Process, Random Forest, Gradient Boosted Tree (using LGBM), and Tree-Parzen Estimator (not Bayesian optimization in the strictest sense of the word -- deal with it), each with customizable exploration-exploitation controls. 
 
 ![Dynamic Tuna](https://img.shields.io/badge/bayesian-optimization-blue.svg) ![License](https://img.shields.io/badge/license-MIT-green)
 
