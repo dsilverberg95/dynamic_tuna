@@ -46,7 +46,7 @@ sampler = GBTSampler(search_space, n_ei_function=lambda n, a=1, b=2: a * n + b)
 study = optuna.create_study(sampler=sampler)
 study.optimize(objective_function, n_trials=50)
 print("Best Parameters:", study.best_params)
-
+```
 ⚙️ Usage
 
 	1.	Initialize a Sampler:
@@ -70,13 +70,9 @@ Please ensure that your code is well-documented and tested.
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-📣 Attribution
-
-This library was created by David Silverberg. If you use it in your work, please give credit to the original author in documentation or source code comments.
-
 📬 Contact
 
-Have questions or feedback? Reach out to me at email@example.com or create an issue in the repository.
+Have questions or feedback? Reach out to me at dsilverberg95@gmail.com or create an issue in the repository.
 
 Happy Optimizing! 🎉
 
