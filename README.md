@@ -1,6 +1,6 @@
 # Dynamic Tuna: Flexible Bayesian Optimization Library
 
-**Dynamic Tuna** is a Bayesian optimization library built on Optuna and scikit-optimize that supports customizable exploration-exploitation control. The supported samplers (surrogate models) are Gaussian Process, Random Forest, Gradient Boosted Decision Trees (using LGBM under the hood), and Tree-Parzen Estimator (not Bayesian optimization in the strictest sense of the word -- deal with it), each with customizable exploration-exploitation controls. 
+**Dynamic Tuna** is a Bayesian optimization library built on Optuna and scikit-optimize that supports customizable exploration-exploitation control. The supported samplers (surrogate models) are Gaussian Process, Random Forest, Gradient Boosted Decision Trees, and Tree-structured Parzen Estimator -- each with customizable exploration-exploitation controls.
 
 ![Dynamic Tuna](https://img.shields.io/badge/bayesian-optimization-blue.svg) ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -9,6 +9,7 @@
 ## 🌟 Features
 
 - **Dynamic Sampling**: Control the exploration-exploitation tradeoff with flexible `n_ei_function` parameters.
+
 - **Diverse Samplers**: Use Gaussian Process, Random Forest, or Gradient Boosted Trees as the surrogate model for efficient sampling.
 - **Customizable Hyperparameters**: Define custom `n_ei_function` parameters for precise control over the optimization process.
 
@@ -47,7 +48,7 @@ study = optuna.create_study(sampler=sampler)
 study.optimize(objective_function, n_trials=50)
 print("Best Parameters:", study.best_params)
 ```
-⚙️ Usage
+## ⚙️ Usage
 
 	1.	Initialize a Sampler:
 Choose from GBTSampler, RandomForestSampler, or GPSampler and define your n_ei_function.
@@ -56,7 +57,7 @@ Use Optuna’s UniformDistribution, IntUniformDistribution, and more.
 	3.	Run Optimization:
 Run your study with optuna.create_study() and check the results.
 
-🔧 Contributing
+## 🔧 Contributing
 
 Contributions are welcome! To contribute:
 
@@ -66,11 +67,11 @@ Contributions are welcome! To contribute:
 
 Please ensure that your code is well-documented and tested.
 
-📜 License
+## 📜 License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-📬 Contact
+## 📬 Contact
 
 Have questions or feedback? Reach out to me at dsilverberg95@gmail.com or create an issue in the repository.
 
