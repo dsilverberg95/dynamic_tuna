@@ -6,7 +6,7 @@
 
 ---
 
-## 🌟 Bayesian Optimziation at a Glance
+## 🌻 Bayesian Optimization at a Glance
 
 
 - **Dynamic Sampling**: Control the exploration-exploitation tradeoff with flexible `n_ei_function` parameters.
@@ -17,7 +17,7 @@
 
 ---
 
-## 🌟 The Exploitation-Exploration Tradeoff
+## 🧭 The Exploitation-Exploration Tradeoff
 
 
 ---
