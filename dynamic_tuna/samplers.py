@@ -1,4 +1,4 @@
-from .n_ei_functions import *
+from .dynamic_functions import *
 import numpy as np
 import optuna
 from optuna.samplers import BaseSampler, TPESampler, MOTPESampler
@@ -9,9 +9,10 @@ from sklearn.gaussian_process.kernels import Matern, WhiteKernel, ConstantKernel
 
 
 class GaussianProcessSampler(BaseSampler):
-    def __init__(self, 
-                 kernel=None, 
+    def __init__(self,
+                 kernel=None,
                  n_restarts_optimizer=5,
+                 n_candidates=1000,
                  acq_func="EI",
                  xi=0.01,
                  xi_function=None):  # Dynamic xi function for adaptive exploration-exploitation control
@@ -30,6 +31,7 @@ class GaussianProcessSampler(BaseSampler):
         self.acq_func = acq_func
         self.xi = xi
         self.xi_function = xi_function or (lambda n: xi)  # Default to static xi if no function is provided
+        self.n_candidates = n_candidates
     
     def sample_independent(self, study, trial, search_space):
         completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
@@ -53,7 +55,7 @@ class GaussianProcessSampler(BaseSampler):
         candidates = np.random.uniform(
             low=[search_space[name][0] for name in search_space.keys()],
             high=[search_space[name][1] for name in search_space.keys()],
-            size=(1000, len(search_space))  # Pool size for candidate sampling
+            size=(self.n_candidates, len(search_space))  # Pool size for candidate sampling
         )
         
         mu, sigma = self.gp.predict(candidates, return_std=True)

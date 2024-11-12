@@ -1,17 +1,24 @@
 # Dynamic Tuna: Flexible Bayesian Optimization Library
 
-**Dynamic Tuna** is a Bayesian optimization library built on Optuna and scikit-optimize that supports customizable exploration-exploitation control. The supported samplers (surrogate models) are Gaussian Process, Random Forest, Gradient Boosted Decision Trees, and Tree-structured Parzen Estimator -- each with customizable exploration-exploitation controls.
+**Dynamic Tuna** is a library of surrogate models that are compatible with the Optuna framework for performing Bayesian optimization (BO). Surrogate models (i.e. samplers) include Gaussian Process, Random Forest, and Tree-Structured Parzen Estimator. While most BO libraries allow for some sort of static control over the exploitation-exploration tradeoff during the search, dynamic-tuna allows for dynamic control. Several mechanisims for doing so are explained below, along with their respective rationales. 
 
 ![Dynamic Tuna](https://img.shields.io/badge/bayesian-optimization-blue.svg) ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
-## 🌟 Features
+## 🌟 Bayesian Optimziation at a Glance
+
 
 - **Dynamic Sampling**: Control the exploration-exploitation tradeoff with flexible `n_ei_function` parameters.
 
 - **Diverse Samplers**: Use Gaussian Process, Random Forest, or Gradient Boosted Trees as the surrogate model for efficient sampling.
 - **Customizable Hyperparameters**: Define custom `n_ei_function` parameters for precise control over the optimization process.
+
+
+---
+
+## 🌟 The Exploitation-Exploration Tradeoff
+
 
 ---
 
@@ -26,12 +33,11 @@ pip install -r requirements.txt
 
 
 	Note: This library requires Python 3.8+.
-
-🚀 Getting Started
-
+```
+## 🚀 Getting Started
 Here’s a quick example to get you started with Dynamic Tuna.
 
-
+```python
 import optuna
 from dynamic_tuna import GBTSampler
 
@@ -74,6 +80,4 @@ This project is licensed under the MIT License. See the LICENSE file for details
 ## 📬 Contact
 
 Have questions or feedback? Reach out to me at dsilverberg95@gmail.com or create an issue in the repository.
-
-Happy Optimizing! 🎉
 
