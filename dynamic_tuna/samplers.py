@@ -1,4 +1,5 @@
 from .dynamic_functions import *
+import logging
 import numpy as np
 import optuna
 from optuna.samplers import BaseSampler, TPESampler, MOTPESampler
@@ -32,30 +33,34 @@ class GaussianProcessSampler(BaseSampler):
         self.xi = xi
         self.xi_function = xi_function or (lambda n: xi)  # Default to static xi if no function is provided
         self.n_candidates = n_candidates
+        self.xi_history = []  # Track history of xi
     
-    def sample_independent(self, study, trial, search_space):
+    
+    def sample_independent(self, study, trial, param_name, param_distribution):
         completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
         n = len(completed_trials)
         
         # Dynamically adjust xi if a function is provided
         current_xi = self.xi_function(n)
+        self.xi_history.append(current_xi) 
+
         
         if len(completed_trials) < 2:
             # Random sampling if not enough data for GP
-            return {param_name: np.random.uniform(low, high) for param_name, (low, high) in search_space.items()}
+            return np.random.uniform(param_distribution.low, param_distribution.high)
         
         # Prepare data for GP
-        X = np.array([[t.params[name] for name in search_space.keys()] for t in completed_trials])
-        y = np.array([t.value for t in completed_trials])
+        X = np.array([[t.params[param_name]] for t in completed_trials if param_name in t.params])
+        y = np.array([t.value for t in completed_trials if param_name in t.params])
         
         # Fit the Gaussian Process
         self.gp.fit(X, y)
         
         # Generate candidates and calculate acquisition function
         candidates = np.random.uniform(
-            low=[search_space[name][0] for name in search_space.keys()],
-            high=[search_space[name][1] for name in search_space.keys()],
-            size=(self.n_candidates, len(search_space))  # Pool size for candidate sampling
+            low=param_distribution.low,
+            high=param_distribution.high,
+            size=(self.n_candidates, 1)
         )
         
         mu, sigma = self.gp.predict(candidates, return_std=True)
@@ -71,8 +76,16 @@ class GaussianProcessSampler(BaseSampler):
             pi = norm.cdf((threshold - mu) / sigma)
             best_candidate = candidates[np.argmax(pi)]
         
-        # Return sampled parameters in the required format
-        return {param_name: best_candidate[i] for i, param_name in enumerate(search_space.keys())}
+        return best_candidate[0]
+
+    def infer_relative_search_space(self, study, trial):
+        # Returning an empty dictionary, as required by BaseSampler
+        return {}
+
+    def sample_relative(self, study, trial, search_space):
+        # This method is typically not used in independent samplers
+        # You can either leave it empty or raise an exception if it's called unexpectedly
+        return {}
     
 
 
@@ -97,30 +110,31 @@ class RandomForestSampler(BaseSampler):
         self.acq_func = acq_func
         self.xi = xi
         self.xi_function = xi_function or (lambda n: xi)  # Default to static xi if no function is provided
+        self.xi_history = []
     
-    def sample_independent(self, study, trial, search_space):
+    def sample_independent(self, study, trial, param_name, param_distribution):
         completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
         n = len(completed_trials)
         
         # Dynamically adjust xi if a function is provided
         current_xi = self.xi_function(n)
+        self.xi_history.append(current_xi)  # Track xi value for each trial
         
         if len(completed_trials) < 2:
-            # Random sampling if not enough data for the model
-            return {param_name: np.random.uniform(low, high) for param_name, (low, high) in search_space.items()}
+            return np.random.uniform(param_distribution.low, param_distribution.high)
         
         # Prepare data for Random Forest
-        X = np.array([[t.params[name] for name in search_space.keys()] for t in completed_trials])
-        y = np.array([t.value for t in completed_trials])
+        X = np.array([[t.params[param_name]] for t in completed_trials if param_name in t.params])
+        y = np.array([t.value for t in completed_trials if param_name in t.params])
         
         # Fit the Random Forest model
         self.model.fit(X, y)
         
         # Generate candidates and calculate acquisition function
         candidates = np.random.uniform(
-            low=[search_space[name][0] for name in search_space.keys()],
-            high=[search_space[name][1] for name in search_space.keys()],
-            size=(1000, len(search_space))  # Pool size for candidate sampling
+            low=param_distribution.low,
+            high=param_distribution.high,
+            size=(1000, 1)
         )
         
         mu = self.model.predict(candidates)
@@ -137,47 +151,49 @@ class RandomForestSampler(BaseSampler):
             pi = norm.cdf((threshold - mu) / sigma)
             best_candidate = candidates[np.argmax(pi)]
         
-        # Return sampled parameters in the required format
-        return {param_name: best_candidate[i] for i, param_name in enumerate(search_space.keys())}
+        return best_candidate[0]
+    
+    def infer_relative_search_space(self, study, trial):
+        # Returning an empty dictionary, as required by BaseSampler
+        return {}
+
+    def sample_relative(self, study, trial, search_space):
+        # This method is typically not used in independent samplers
+        # You can either leave it empty or raise an exception if it's called unexpectedly
+        return {}
 
 
 class DynamicTPESampler(TPESampler):
-    def __init__(self, search_space, n_ei_function, a=0, b=1, from_start=True, **kwargs):
-        super().__init__(search_space, n_ei_function, a, b, from_start)
-        TPESampler.__init__(self, **kwargs)  # Initialize Optuna's TPESampler
+    def __init__(self, n_ei_function, a=0, b=1, from_start=True, **kwargs):
+        super().__init__(**kwargs)
+        self.n_ei_function = n_ei_function
+        self.a = a
+        self.b = b
+        self.from_start = from_start
+        self.n_ei_candidates_history = []  # Initialize history for tracking n_ei_candidates
 
     def sample_independent(self, study, trial, param_name, param_distribution):
-        # Calculate n_ei_candidates dynamically
-        n_ei_candidates = self._get_n_ei_candidates(study)
-        
-        # Temporarily override _n_ei_candidates in the TPE logic
+        completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
+        n_ei_candidates = self.n_ei_function(len(completed_trials))
+
+        # Track `n_ei_candidates` value for verification
+        self.n_ei_candidates_history.append(n_ei_candidates)
+
+        # Temporarily override _n_ei_candidates
         original_n_ei_candidates = self._n_ei_candidates
         self._n_ei_candidates = n_ei_candidates
 
-        # Perform TPE sampling as usual
-        sample = super(TPESampler, self).sample_independent(study, trial, param_name, param_distribution)
+        sample = super().sample_independent(study, trial, param_name, param_distribution)
 
-        # Restore the original _n_ei_candidates
+        # Restore original _n_ei_candidates
         self._n_ei_candidates = original_n_ei_candidates
         return sample
 
+    def infer_relative_search_space(self, study, trial):
+        # Returning an empty dictionary, as required by BaseSampler
+        return {}
 
-class DynamicMOTPESampler(MOTPESampler):
-    def __init__(self, search_space, n_ei_function, a=0, b=1, from_start=True, **kwargs):
-        super().__init__(search_space, n_ei_function, a, b, from_start)
-        TPESampler.__init__(self, **kwargs)  # Initialize Optuna's TPESampler
-
-    def sample_independent(self, study, trial, param_name, param_distribution):
-        # Calculate n_ei_candidates dynamically
-        n_ei_candidates = self._get_n_ei_candidates(study)
-        
-        # Temporarily override _n_ei_candidates in the TPE logic
-        original_n_ei_candidates = self._n_ehvi_candidates
-        self._n_ehvi_candidates = n_ei_candidates
-
-        # Perform TPE sampling as usual
-        sample = super(TPESampler, self).sample_independent(study, trial, param_name, param_distribution)
-
-        # Restore the original _n_ei_candidates
-        self._n_ehvi_candidates = original_n_ei_candidates
-        return sample
+    def sample_relative(self, study, trial, search_space):
+        # This method is typically not used in independent samplers
+        # You can either leave it empty or raise an exception if it's called unexpectedly
+        return {}

@@ -1,6 +1,6 @@
 # Dynamic Tuna: Flexible Bayesian Optimization Library
 
-**Dynamic Tuna** is a library of surrogate models that are compatible with the Optuna framework for performing Bayesian optimization (BO) of machine learning hyperparameters. The provided surrogate models (i.e. samplers) include Gaussian Process, Random Forest, and Tree-structured Parzen Estimator. While most BO libraries allow for some sort of static control over the exploitation-exploration tradeoff during the search, Dynamic Tuna allows for dynamic control. Several mechanisims for doing so are explained below, along with their respective rationales. 
+**Dynamic Tuna** is a library of surrogate models that are compatible with the Optuna framework for performing Bayesian optimization (BO) of machine learning hyperparameters. The provided surrogate models (i.e. samplers) include Gaussian Process, Random Forest, and Tree-structured Parzen Estimator. While most BO libraries allow for some sort of static control over the exploitation-exploration tradeoff during the search, Dynamic Tuna allows for dynamic control (hence, the name). Several mechanisms for doing so are explained below, along with their respective rationales. 
 
 ![Dynamic Tuna](https://img.shields.io/badge/bayesian-optimization-blue.svg) ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -8,13 +8,13 @@
 
 ## 🔭 Bayesian Optimization at a Glance
 
-Bayesian Optimization (BO) is a sequential model-based optimization technique that leverages surrogate models to efficiently search the hyperparameter space. It approximates the objective function—typically model performance—using models such as Gaussian Processes, which provide uncertainty estimates, or the Tree-structured Parzen Estimator (TPE), which does not. Each iteration selects hyperparameters to maximize an acquisition function, balancing exploration and exploitation. By directing evaluations toward configurations with the highest expected improvement, BO reduces the number of required trials, making it highly effective for optimizing models with expensive training costs.
+Bayesian Optimization (BO) is a sequential optimization technique that efficiently searches the hyperparameter space by using a surrogate model (e.g. Gaussian Process) to approximate the objective function. Each iteration selects hyperparameters to maximize an acquisition function, balancing exploration and exploitation. By directing evaluations toward configurations with the highest expected improvement, BO reduces the number of required trials, making it highly effective for optimizing models with expensive training costs.
 
 ---
 
-## 🧭 The Exploitation-Exploration Tradeoff
+## ⚖️ The Exploitation-Exploration Tradeoff
 
-In Bayesian Optimization, the exploitation/exploration tradeoff governs how hyperparameters are selected in each iteration. Exploitation involves sampling configurations known to perform well, aiming to quickly converge on a local optimum. Exploration, in contrast, seeks out new, uncertain regions of the hyperparameter space to identify potentially better solutions. The acquisition function mediates this tradeoff by assigning scores that balance the expected improvement from both strategies. For instance, Gaussian Processes and Random Forests leverage uncertainty estimates to explore regions with high variance. On the other hand, Tree-structured Parzen Estimators (TPE) do not inherently support uncertainty estimation, so over-exploitation is combatted indirectly through a separate mechanism (see below). Ultimately, managing the exporation-exploitation tradeoff is essential for efficiently navigating the search space and finding a "good" hyperparameter configuration with minimal evaluations.
+In Bayesian Optimization, the exploitation/exploration tradeoff governs how hyperparameters are selected in each iteration. Exploitation involves sampling configurations known to perform well, aiming to quickly converge on a local optimum. Exploration, in contrast, seeks out new, uncertain regions of the hyperparameter space to identify potentially better solutions. The acquisition function mediates this tradeoff by assigning scores that balance the expected improvement from both strategies. For instance, Gaussian Processes and Random Forests leverage uncertainty estimates to explore regions with high variance. On the other hand, Tree-structured Parzen Estimators (TPE) do not inherently support uncertainty estimation, so over-exploitation is combatted indirectly through a separate mechanism (see below). Ultimately, managing the exporation-exploitation tradeoff is essential for efficiently navigating the search space and finding a sufficiently good hyperparameter configuration with minimal evaluations.
 
 ---
 
