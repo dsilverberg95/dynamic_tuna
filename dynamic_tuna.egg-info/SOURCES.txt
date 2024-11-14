@@ -1,0 +1,10 @@
+LICENSE.txt
+README.md
+setup.py
+dynamic_tuna/__init__.py
+dynamic_tuna/dynamic_functions.py
+dynamic_tuna/samplers.py
+dynamic_tuna.egg-info/PKG-INFO
+dynamic_tuna.egg-info/SOURCES.txt
+dynamic_tuna.egg-info/dependency_links.txt
+dynamic_tuna.egg-info/top_level.txt
