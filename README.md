@@ -8,23 +8,48 @@
 
 ## 🔭 Bayesian Optimization at a Glance
 
-Bayesian Optimization (BO) is a sequential optimization technique that efficiently searches the hyperparameter space by using a surrogate model (e.g. Gaussian Process) to approximate the objective function. Each iteration selects hyperparameters to maximize an acquisition function, balancing exploration and exploitation. By directing evaluations toward configurations with the highest expected improvement, BO reduces the number of required trials, making it highly effective for optimizing models with expensive training costs.
+Bayesian Optimization (BO) is a sequential optimization technique that efficiently 
+searches a hyperparameter space by using a surrogate model (e.g. Gaussian Process)
+to approximate a computationally expensive objective function. At each iteration, the algorithm selects whichever hyperparameter combination 
+that happens to maximize a pre-determined acquisition function (AF), which is generally selected by the user to balance exploration and exploitation 
+within the search space. The performance of the selected configuration is then used to adjust the surrogate model via Bayesian updating to ultimately
+make a more informed hyperparameter selection at the next iteration. 
+
 
 ---
 
 ## ⚖️ Overview of Exploitation-Exploration Tradeoff
 
-In Bayesian Optimization, the exploitation/exploration tradeoff governs how hyperparameters are selected in each iteration. Exploitation involves sampling configurations known to perform well, aiming to quickly converge on a local optimum. Exploration, in contrast, seeks out new, uncertain regions of the hyperparameter space to identify potentially better solutions. The acquisition function mediates this tradeoff by assigning scores that balance the expected improvement from both strategies. For instance, Gaussian Processes and Random Forests leverage uncertainty estimates to explore regions with high variance. On the other hand, Tree-structured Parzen Estimators (TPE) do not inherently support uncertainty estimation, so over-exploitation is combatted indirectly through separate mechanisms (see below). Ultimately, managing the exporation-exploitation tradeoff is essential for efficiently navigating the search space and finding a sufficiently good hyperparameter configuration with minimal evaluations.
+The exploitation-exploration tradeoff governs how hyperparameters 
+are selected at each iteration. Exploitation involves sampling configurations known to perform 
+well, aiming to quickly converge on a local optimum. Exploration, in contrast, seeks out new, 
+uncertain regions of the hyperparameter space to identify potentially better solutions. The 
+acquisition function mediates this tradeoff by assigning scores that balance the expected 
+improvement from both strategies. For instance, Gaussian Processes and Random Forests leverage 
+uncertainty estimates to explore regions with high variance. On the other hand, Tree-structured 
+Parzen Estimators (TPE) do not inherently support uncertainty estimation, so over-exploitation 
+is combatted indirectly through separate mechanisms (see below). Ultimately, managing the 
+exporation-exploitation tradeoff is essential for efficiently navigating the search space and 
+finding a sufficiently good hyperparameter configuration with minimal evaluations.
 
 ---
 
 ## 🧠 Exploitation-Exploration with Dynamic Tuna
 
-Dynamic Tuna allows for two types of dynamic control over the EE tradeoff, which I will call *active* and *passive* control. Active control is when you include a measure of uncertainty in your acquisition function in addition to the usual measure of expected improvement. The user can then dynamically manipulate the parameter that balances uncertainty and expected improvement. Conversely, passive control is when the acquisition function does *not* include an uncertainty measure, in which case the user can manipulate a separate parameter that balances full exploitation and random search. 
-
-The more you know about the search space, the more you should exploit your knowledge. Similarly, the less time you have remaining to explore the search space, the smaller your incentive to explore (unless your current best is terrible). The GP and RF samplers in Dynamic Tuna allow for exploration-exploration control via the parameter $xi$, which is consistent with the corresponding versions of these samplers in the scikit-optimize package (no longer maintained as of 11/14/24) 
-
-On the other hand, the Tree-structured Parsen Estimator in the Optuna package allows you to control the exploitation/exploration tradeoff in a less direct fashion via the parameter $n_ei_candidates$. 
+Dynamic Tuna allows for two types of dynamic control over the EE tradeoff, which I will 
+call *active* and *passive* control. Active control is when you include a measure of 
+uncertainty in your acquisition function in addition to the usual measure of expected 
+improvement. The user can then directly manipulate the parameter that balances uncertainty 
+with expected improvement. Conversely, passive control is when the acquisition function 
+does *not* include an uncertainty measure, in which case the user can manipulate a separate 
+parameter that balances exploitation with random search. The more you know about the search 
+space, the more you should exploit your knowledge. Similarly, the less time you have 
+remaining to explore the search space, the smaller your incentive is to explore (unless your 
+current best is terrible). The GP and RF samplers in Dynamic Tuna allow for exploration-exploration 
+control via the parameter $xi$, which is consistent with the corresponding versions of these 
+samplers in the scikit-optimize package (no longer maintained as of 11/14/24). On the other 
+hand, the Tree-structured Parsen Estimator in the Optuna package allows you to control the 
+exploitation/exploration tradeoff in a less direct fashion via the parameter $n_ei_candidates$. 
 
 
 
