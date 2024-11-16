@@ -10,7 +10,7 @@
 
 Bayesian Optimization (BO) is a sequential optimization technique that efficiently 
 searches a hyperparameter space by using a surrogate model (e.g. Gaussian Process)
-to approximate a computationally expensive objective function. At each iteration, the algorithm selects whichever hyperparameter combination 
+to approximate a computationally expensive objective function. At each iteration, the algorithm selects the hyperparameter combination 
 that happens to maximize a pre-determined acquisition function (AF), which is generally selected by the user to balance exploration and exploitation 
 within the search space. The performance of the selected configuration is then used to adjust the surrogate model via Bayesian updating to ultimately
 make a more informed hyperparameter selection at the next iteration. 
