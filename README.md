@@ -8,14 +8,7 @@
 
 ## 🔭 Bayesian Optimization at a Glance
 
-Bayesian Optimization (BO) is a sequential optimization technique that efficiently searches a hyperparameter space by using a surrogate model (e.g. Gaussian Process) to approximate a computationally expensive objective function. At each iteration, the algorithm selects the hyperparameters that maximize a pre-determined acquisition function (AF), which is chosen by the user to balance exploration and exploitation within the search space. The model then trains with the selected configuration, and its performance is used to adjust the surrogate model via Bayesian updating to make a more informed hyperparameter selection at the next iteration. This continues until reaching a stop criterion.
-
-
----
-
-## ⚖️ Overview of Exploitation-Exploration Tradeoff
-
-The EE tradeoff governs how hyperparameters are selected at each iteration. Exploitation involves sampling configurations known to perform well, aiming to quickly converge on a local optimum. Exploration, in contrast, seeks out new, uncertain regions of the hyperparameter space to identify potentially better solutions. The acquisition function mediates this tradeoff by assigning scores that balance the expected improvement from both strategies. For instance, Gaussian Processes and Random Forests leverage uncertainty estimates to explore regions with high variance. On the other hand, Tree-structured Parzen Estimators (TPE) do not inherently support uncertainty estimation, so over-exploitation is combatted indirectly through separate mechanisms (see below). Ultimately, managing the EE tradeoff is essential for efficiently navigating the search space and finding a sufficiently good hyperparameter configuration with minimal evaluations.
+Bayesian Optimization (BO) is a sequential optimization technique that efficiently searches a hyperparameter space by using a surrogate model (e.g. Gaussian Process) to approximate a computationally expensive objective function. At each iteration, the algorithm selects the hyperparameters that maximize a pre-determined acquisition function (AF), which is chosen by the user to balance exploration and exploitation within the search space. The model then trains with the selected configuration, and its performance is used to adjust the surrogate model via Bayesian updating to make a more informed hyperparameter selection at the next iteration. This continues until a stopping criterion is reached.
 
 ---
 
