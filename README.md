@@ -6,13 +6,13 @@
 
 ---
 
-## 🔭 Bayesian Optimization at a Glance
+## 1. Bayesian Optimization at a Glance
 
 Bayesian Optimization (BO) is a sequential optimization technique that efficiently searches a hyperparameter space by using a surrogate model (e.g. Gaussian Process) to approximate a computationally expensive objective function. At each iteration, the algorithm selects the hyperparameters that maximize a pre-determined acquisition function (AF), which is chosen by the user to balance exploration and exploitation within the search space. The model then trains with the selected configuration, and its performance is used to adjust the surrogate model via Bayesian updating to make a more informed hyperparameter selection at the next iteration. This process continues until a stopping criterion is reached.
 
 ---
 
-## 🧠 Exploitation-Exploration Control with Dynamic Tuna
+## 2. Exploitation-Exploration Control with Dynamic Tuna
 
 Dynamic Tuna simultaneously allows for two types of control over the EE tradeoff: *uncertainty* control (UC) and *ambiguity* control (AC). Suppose the user believes that the surrogate model effectively represents their beliefs about the search space. If the user instructs the sampler to explicitly seek out uncertain regions of the search space, the user is exercising UC. On the other hand, suppose the user does not trust that the surrogate model effectively represents their beliefs about the search space due to ambiguity regarding, say, the space's smoothness. Note that many models are optimized by quickly evaluating a huge number of points and using the approximate optimum. If the user chooses to sample a smaller number of points to find the optimum (thereby introducing more randomness into the search process), the user is exercising AC. 
 
@@ -20,12 +20,12 @@ Consider a Gaussian Process:
 
 ---
 
-## 🧠 Dynamic EE Control with Dynamic Tuna
+## 3. Dynamic EE Control with Dynamic Tuna
 
 
 ---
 
-## 📥 Installation
+## 4. Installation
 
 Clone the repository and install the required packages from `requirements.txt`:
 
@@ -37,7 +37,7 @@ pip install -r requirements.txt
 
 	Note: This library requires Python 3.8+.
 ```
-## 🚀 Getting Started
+## 5. Getting Started
 Here’s a quick example to get you started with Dynamic Tuna.
 
 ```python
@@ -57,7 +57,7 @@ study = optuna.create_study(sampler=sampler)
 study.optimize(objective_function, n_trials=50)
 print("Best Parameters:", study.best_params)
 ```
-## ⚙️ Usage
+## 6. Usage
 
 	1.	Initialize a Sampler:
 Choose from GBTSampler, RandomForestSampler, or GPSampler and define your n_ei_function.
@@ -66,11 +66,11 @@ Use Optuna’s UniformDistribution, IntUniformDistribution, and more.
 	3.	Run Optimization:
 Run your study with optuna.create_study() and check the results.
 
-## 📜 License
+## 7. License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-## 📬 Contact
+## 8. Contact
 
 Have questions or feedback? Reach out to me at dsilverberg95@gmail.com or create an issue in the repository.
 
