@@ -61,16 +61,6 @@ Use Optuna’s UniformDistribution, IntUniformDistribution, and more.
 	3.	Run Optimization:
 Run your study with optuna.create_study() and check the results.
 
-## 🔧 Contributing
-
-Contributions are welcome! To contribute:
-
-	1.	Fork the repository.
-	2.	Create a new branch with your feature or bugfix.
-	3.	Submit a pull request with a description of your changes.
-
-Please ensure that your code is well-documented and tested.
-
 ## 📜 License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
