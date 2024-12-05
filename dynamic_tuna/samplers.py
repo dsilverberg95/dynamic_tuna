@@ -1,4 +1,4 @@
-from .dynamic_functions import *
+from .utils import *
 from itertools import product
 import numpy as np
 import optuna
@@ -13,6 +13,7 @@ class GPSampler(BaseSampler):
     def __init__(self, 
                  xi=0.01, 
                  xi_function=None, 
+                 n_candidates=100,
                  kernel=None):
         """
         Gaussian Process-based sampler for Optuna with dynamic exploration-exploitation trade-off.
@@ -29,6 +30,7 @@ class GPSampler(BaseSampler):
         self.xi_history = []
         self._rng = np.random.RandomState()
         self.maximize = False  # Default to minimization; will be updated dynamically.
+        self.n_candidates = n_candidates
 
     def infer_relative_search_space(self, study, trial):
         return optuna.search_space.intersection_search_space(
@@ -73,7 +75,7 @@ class GPSampler(BaseSampler):
         candidate_ranges = [
             np.linspace(d.low, d.high, 20) for d in param_distributions
         ]
-        candidate_grid = np.array(list(product(*candidate_ranges)))
+        candidate_grid = generate_hyperparameter_candidates(param_distributions, self.n_candidates)
 
         # Predict mean and standard deviation for candidates
         mu, sigma = self.gp.predict(candidate_grid, return_std=True)
