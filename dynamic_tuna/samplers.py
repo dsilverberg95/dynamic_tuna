@@ -13,7 +13,7 @@ class GPSampler(BaseSampler):
     def __init__(self, 
                  xi=0.01, 
                  xi_function=None, 
-                 n_candidates=100,
+                 n_candidates=10000,
                  kernel=None):
         """
         Gaussian Process-based sampler for Optuna with dynamic exploration-exploitation trade-off.
