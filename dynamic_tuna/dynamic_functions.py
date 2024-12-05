@@ -1,64 +1,53 @@
 ### some possible n_ei_function
+import numpy as np
 
-def linear_n_ei_candidates(n, a, b, from_start=True):
-    '''
-    if from_start=True:
-    - n is number of completed trials
-    - n_ei_candidates = a * n + b
-    - b is number of candidates in first trial (since n=0)
-    if from_start=False: 
-    - n is number of remaining trials
-    - n_ei_candidates = (-a) * (n-1) + b
-    - b is number of candidates in final trial (since n=1)
-    '''
+def linear_n_ei_candidates(n, n_ei_c_start=100, n_ei_c_end=10, n_max=100):
+    """
+    Linearly decay or increase the number of EI candidates over the trials.
 
-    if from_start:
-        n_ei_candidates = (a * n) + b
+    Parameters:
+    - n: Current trial number.
+    - n_ei_c_start: Initial number of EI candidates (at the start of trials).
+    - n_ei_c_end: Final number of EI candidates (at the end of trials).
+    - n_max: Total number of trials.
 
-    else:
-        n_ei_candidates = b - (a * (n - 1))
+    Returns:
+    - The linearly adjusted number of EI candidates for the current trial.
+    """
+    if n > n_max:
+        return n_ei_c_end
+    return n_ei_c_start + (n_ei_c_end - n_ei_c_start) * (n / n_max)
 
-    return max(1, round(n_ei_candidates))
+def linear_xi(n, xi_start=1, xi_end=0.01, n_max=100):
+    """
+    Linear decay of xi from xi_start to xi_end over n_max trials.
 
+    Parameters:
+    - n: Current trial number
+    - xi_start: Initial value of xi (exploration)
+    - xi_end: Final value of xi (exploitation)
+    - n_max: Total number of trials
 
-def polynomial_n_ei_candidates(n, a, b, c, from_start=True):
-    '''
-    if from_start=True:
-    - n is number of completed trials
-    - n_ei_candidates = (a * (n ** c)) + b
-    - b is number of candidates in first trial (since n=0)
-    if from_start=False: 
-    - n is number of remaining trials
-    - n_ei_candidates = b - (a * ((n - 1) ** c))
-    - b is number of candidates in final trial (since n=1)
-    '''
-
-    if from_start:
-        n_ei_candidates = (a * (n ** c)) + b
-
-    else:
-        n_ei_candidates = b - (a * ((n - 1) ** c))
-
-    return max(1, round(n_ei_candidates))
+    Returns:
+    - Linearly decayed xi value for the current trial
+    """
+    if n > n_max:
+        return xi_end
+    return xi_start + (xi_end - xi_start) * (n / n_max)
 
 
-def linear_xi(n, a, b, from_start=True):
-    '''
-    if from_start=True:
-    - n is number of completed trials
-    - xi = a * n + b
-    - b is xi in first trial (since n=0)
-    if from_start=False: 
-    - n is number of remaining trials
-    - xi = (-a) * (n-1) + b
-    - b is xi in final trial (since n=1)
-    '''
-    if from_start:
-        xi = (a * n) + b
-    
-    else:
-        xi = b - (a * (n - 1))
+def inverse_exponential_xi(n, xi_start=0.2, xi_end=0.01, n_max=100, k=0.1):
+    """
+    Inverse exponential decay: slow reduction at first, rapid reduction toward the end.
 
-    return max(.01, xi)
+    Parameters:
+    - n: Current trial number
+    - xi_start: Initial value of xi (exploration)
+    - xi_end: Final value of xi (exploitation)
+    - n_max: Total number of trials
+    - k: Scaling factor for the decay rate
 
-
+    Returns:
+    - Dynamic xi value for the current trial
+    """
+    return xi_end + (xi_start - xi_end) * (1 - np.exp(-n / (n_max * k)))

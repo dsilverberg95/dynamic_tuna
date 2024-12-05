@@ -1,95 +1,104 @@
 from .dynamic_functions import *
-import logging
+from itertools import product
 import numpy as np
 import optuna
-from optuna.samplers import BaseSampler, TPESampler, MOTPESampler
+from optuna.samplers import BaseSampler, TPESampler
 from scipy.stats import norm
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import Matern, WhiteKernel, ConstantKernel as C
+from sklearn.gaussian_process.kernels import Matern, WhiteKernel, ConstantKernel
 
 
-class GaussianProcessSampler(BaseSampler):
-    def __init__(self,
-                 kernel=None,
-                 n_restarts_optimizer=5,
-                 n_candidates=1000,
-                 acq_func="EI",
-                 xi=0.01,
-                 xi_function=None):  # Dynamic xi function for adaptive exploration-exploitation control
+class GPSampler(BaseSampler):
+    def __init__(self, 
+                 xi=0.01, 
+                 xi_function=None, 
+                 kernel=None):
         """
         Gaussian Process-based sampler for Optuna with dynamic exploration-exploitation trade-off.
 
-        Parameters:
-        - kernel: Kernel for the Gaussian process. Default is a Matern kernel with noise.
-        - n_restarts_optimizer: Number of restarts for optimizer to find kernel parameters.
-        - acq_func: Acquisition function, either "EI" (expected improvement) or "PI" (probability of improvement).
-        - xi: Initial value of xi for EI/PI acquisition functions.
-        - xi_function: Function to dynamically control xi, taking the current trial number as input.
+        Args:
+            xi (float): Initial value of xi for acquisition function.
+            xi_function (function): Function to dynamically control xi, taking the current trial number as input.
+            kernel (object): Kernel for the Gaussian Process. Defaults to Matern.
         """
-        self.kernel = kernel or C(1.0, (1e-4, 1e1)) * Matern(length_scale=1.0, nu=2.5) + WhiteKernel()
-        self.gp = GaussianProcessRegressor(kernel=self.kernel, n_restarts_optimizer=n_restarts_optimizer)
-        self.acq_func = acq_func
         self.xi = xi
         self.xi_function = xi_function or (lambda n: xi)  # Default to static xi if no function is provided
-        self.n_candidates = n_candidates
-        self.xi_history = []  # Track history of xi
-    
-    
-    def sample_independent(self, study, trial, param_name, param_distribution):
-        completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
-        n = len(completed_trials)
-        
-        # Dynamically adjust xi if a function is provided
-        current_xi = self.xi_function(n)
-        self.xi_history.append(current_xi) 
-
-        
-        if len(completed_trials) < 2:
-            # Random sampling if not enough data for GP
-            return np.random.uniform(param_distribution.low, param_distribution.high)
-        
-        # Prepare data for GP
-        X = np.array([[t.params[param_name]] for t in completed_trials if param_name in t.params])
-        y = np.array([t.value for t in completed_trials if param_name in t.params])
-        
-        # Fit the Gaussian Process
-        self.gp.fit(X, y)
-        
-        # Generate candidates and calculate acquisition function
-        candidates = np.random.uniform(
-            low=param_distribution.low,
-            high=param_distribution.high,
-            size=(self.n_candidates, 1)
-        )
-        
-        mu, sigma = self.gp.predict(candidates, return_std=True)
-        
-        if self.acq_func == "EI":
-            best_y = y.min()
-            improvement = best_y - mu - current_xi
-            Z = improvement / sigma
-            ei = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
-            best_candidate = candidates[np.argmax(ei)]
-        elif self.acq_func == "PI":
-            threshold = y.min() - current_xi
-            pi = norm.cdf((threshold - mu) / sigma)
-            best_candidate = candidates[np.argmax(pi)]
-        
-        return best_candidate[0]
+        self.kernel = kernel or Matern(nu=2.5)
+        self.gp = GaussianProcessRegressor(kernel=self.kernel, normalize_y=True)
+        self.xi_history = []
+        self._rng = np.random.RandomState()
+        self.maximize = False  # Default to minimization; will be updated dynamically.
 
     def infer_relative_search_space(self, study, trial):
-        # Returning an empty dictionary, as required by BaseSampler
-        return {}
+        return optuna.search_space.intersection_search_space(
+            study.get_trials(deepcopy=False)
+        )
 
     def sample_relative(self, study, trial, search_space):
-        # This method is typically not used in independent samplers
-        # You can either leave it empty or raise an exception if it's called unexpectedly
-        return {}
-    
+        # Determine whether to maximize or minimize based on study direction
+        if study.direction == optuna.study.StudyDirection.MAXIMIZE:
+            self.maximize = True
+        else:
+            self.maximize = False
 
+        if len(study.trials) < 2:  # GPR needs data to train
+            return {k: self._rng.uniform(v.low, v.high) for k, v in search_space.items()}
 
-class RandomForestSampler(BaseSampler):
+        completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
+        n = len(completed_trials)
+
+        # Dynamically adjust xi if a function is provided
+        current_xi = self.xi_function(n)
+        self.xi_history.append(current_xi)
+
+        X = []
+        y = []
+
+        for t in completed_trials:
+            params = [t.params[name] for name in search_space.keys()]
+            X.append(params)
+            y.append(t.value)
+
+        X = np.array(X)
+        y = np.array(y)
+
+        self.gp.fit(X, y)
+
+        # Generate candidate grid
+        param_names = list(search_space.keys())
+        param_distributions = [search_space[name] for name in param_names]
+
+        # Generate candidates across all dimensions
+        candidate_ranges = [
+            np.linspace(d.low, d.high, 20) for d in param_distributions
+        ]
+        candidate_grid = np.array(list(product(*candidate_ranges)))
+
+        # Predict mean and standard deviation for candidates
+        mu, sigma = self.gp.predict(candidate_grid, return_std=True)
+        best_y = y.max() if self.maximize else y.min()  # Adjust for direction
+
+        # Calculate Expected Improvement (EI) based on direction
+        improvement = (mu - best_y - current_xi) if self.maximize else (best_y - mu - current_xi)
+        Z = improvement / sigma
+        ei = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
+
+        # Select the candidate with the highest EI
+        best_candidate = candidate_grid[np.argmax(ei)]
+
+        # Map the best candidate to parameter names
+        params = {param_name: best_candidate[i] for i, param_name in enumerate(param_names)}
+
+        return params
+
+    def sample_independent(self, study, trial, param_name, param_distribution):
+        independent_sampler = optuna.samplers.RandomSampler()
+        return independent_sampler.sample_independent(
+            study, trial, param_name, param_distribution
+        )
+
+class RF(BaseSampler):
     def __init__(self, 
                  n_estimators=100, 
                  max_depth=None, 
@@ -163,7 +172,7 @@ class RandomForestSampler(BaseSampler):
         return {}
 
 
-class DynamicTPESampler(TPESampler):
+class TPE(TPESampler):
     def __init__(self, n_ei_function, a=0, b=1, from_start=True, **kwargs):
         super().__init__(**kwargs)
         self.n_ei_function = n_ei_function
@@ -195,5 +204,4 @@ class DynamicTPESampler(TPESampler):
 
     def sample_relative(self, study, trial, search_space):
         # This method is typically not used in independent samplers
-        # You can either leave it empty or raise an exception if it's called unexpectedly
         return {}
