@@ -1,6 +1,7 @@
 from .utils import *
 from itertools import product
 import numpy as np
+import time
 import optuna
 from optuna.samplers import BaseSampler, TPESampler
 from scipy.stats import norm
@@ -13,7 +14,7 @@ class GPSampler(BaseSampler):
     def __init__(self, 
                  xi=0.01, 
                  xi_function=None, 
-                 n_candidates=10000,
+                 n_candidates=1000000,
                  kernel=None):
         """
         Gaussian Process-based sampler for Optuna with dynamic exploration-exploitation trade-off.
@@ -67,18 +68,15 @@ class GPSampler(BaseSampler):
 
         self.gp.fit(X, y)
 
-        # Generate candidate grid
         param_names = list(search_space.keys())
         param_distributions = [search_space[name] for name in param_names]
 
-        # Generate candidates across all dimensions
-        candidate_ranges = [
-            np.linspace(d.low, d.high, 20) for d in param_distributions
-        ]
-        candidate_grid = generate_hyperparameter_candidates(param_distributions, self.n_candidates)
+        start_time = time.time()
+        # Generate candidates
+        candidates = generate_hyperparameter_candidates(param_distributions, self.n_candidates)
 
         # Predict mean and standard deviation for candidates
-        mu, sigma = self.gp.predict(candidate_grid, return_std=True)
+        mu, sigma = self.gp.predict(candidates, return_std=True)
         best_y = y.max() if self.maximize else y.min()  # Adjust for direction
 
         # Calculate Expected Improvement (EI) based on direction
@@ -87,7 +85,11 @@ class GPSampler(BaseSampler):
         ei = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
 
         # Select the candidate with the highest EI
-        best_candidate = candidate_grid[np.argmax(ei)]
+        best_candidate = candidates[np.argmax(ei)]
+
+
+        end_time = time.time()
+        print(f'Candidate evalation time for {self.n_candidates}: ', end_time - start_time)
 
         # Map the best candidate to parameter names
         params = {param_name: best_candidate[i] for i, param_name in enumerate(param_names)}
