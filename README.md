@@ -8,9 +8,9 @@ All explanations and usage examples below assume a degree of familiarity with Ba
 
 ---
 
-## 1.  Library features
+## Exploration-Exploitation Tradeoff
 
-Consider the general acquisition function $A$ expressed as $$A(\theta) = \mu(\theta) + \xi\cdot\sigma(\theta)$$ where $\theta$ is a hyperparameter configuration, $\mu(\theta)$ is the expected value of the surrogate model at $\theta$, $\sigma(\theta)$ is the standard deviation at $\theta$, and $\xi$ is a non-negative number.
+First, consider the general acquisition function $A$ expressed as $$A(\theta) = \mu(\theta) + \xi\cdot\sigma(\theta)$$ where $\theta$ is a hyperparameter configuration, $\mu(\theta)$ is the expected value of the surrogate model at $\theta$, $\sigma(\theta)$ is the standard deviation at $\theta$, and $\xi$ is a non-negative number. Given that we choose the maximizing argument of $A$ at each step of the search process, a smaller $\xi$ will encourage the selection of configurations with high expected values, while a larger $\xi$ will encourage the selection of those with higher uncertainty. Dynamic Tuna allows the user to specify $\xi$ as either a constant or a function $f(n, t)$ where n is the number of previously completed trials and t is the total number of trials to run. In defining $\xi$ as $\xi = f(n, t)$, the user can emphasize early exploration, late exploitation, or both. 
 
 ---
 
