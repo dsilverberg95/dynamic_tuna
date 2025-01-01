@@ -10,7 +10,7 @@ All explanations and usage examples below assume a degree of familiarity with Ba
 
 ## 1.  Library features
 
-Consider the general acquisition function $A(\theta)$, where $\theta$ represents the unknown hyperparameter configuration. 
+Consider the general acquisition function $A$ expressed as: $A(\theta) = \mu(\theta) + \xi\sigma(theta)$$ where $\theta$ is a particular hyperparameter configuration, $mu(\theta)$ is the expected value of the surrogate model at $\theta$, $\sigma(\theta)$ is the standard deviation at $\theta$, and $\xi$ is a non-negative number.
 
 ---
 
