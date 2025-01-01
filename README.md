@@ -14,20 +14,14 @@ First, consider the general acquisition function $A$ expressed as $$A(\theta) = 
 
 ---
 
-## 2.  Exploitation-Exploration Control with Dynamic Tuna
+## Available Surrogate Models
 
-Dynamic Tuna simultaneously allows for two types of control over the EE tradeoff which we'll refer to as *uncertainty* control (UC) and *ambiguity* control (AC). Suppose the user believes that the surrogate model effectively represents their beliefs about the search space. If the user instructs the sampler to explicitly seek out uncertain regions of the search space, the user is exercising UC. On the other hand, suppose the user does not trust that the surrogate model effectively represents their beliefs about the search space due to ambiguity regarding, say, the space's smoothness. Note that many models are optimized by quickly evaluating a huge number of points and using the approximate optimum. If the user chooses to sample a smaller number of points to find the optimum (thereby relying less on the unerlying sampler and introducing more randomness into the search process), the user is exercising AC. 
-
-Consider a Gaussian Process:
-
----
-
-## 3.  Dynamic EE Control with Dynamic Tuna
 
 
 ---
 
-## 4.  Installation
+
+## Installation
 
 Clone the repository and install the required packages from `requirements.txt`:
 
@@ -39,7 +33,10 @@ pip install -r requirements.txt
 
 	Note: This library requires Python 3.8+.
 ```
-## 5.  Getting Started
+
+---
+
+## Example Usage
 Here’s a quick example to get you started with Dynamic Tuna.
 
 ```python
@@ -59,20 +56,17 @@ study = optuna.create_study(sampler=sampler)
 study.optimize(objective_function, n_trials=50)
 print("Best Parameters:", study.best_params)
 ```
-## 6.  Usage
+## Usage
 
-	1.	Initialize a Sampler:
-Choose from GBTSampler, RandomForestSampler, or GPSampler and define your n_ei_function.
-	2.	Define a Search Space:
-Use Optuna’s UniformDistribution, IntUniformDistribution, and more.
-	3.	Run Optimization:
-Run your study with optuna.create_study() and check the results.
+---
 
-## 7.  License
+## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-## 8.  Contact
+---
+
+## Contact
 
 Have questions or feedback? Reach out to me at dsilverberg95@gmail.com or create an issue in the repository.
 
