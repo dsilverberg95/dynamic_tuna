@@ -8,9 +8,9 @@ All explanations and usage examples below assume a degree of familiarity with Ba
 
 ---
 
-## 1.  Bayesian Optimization at a Glance
+## 1.  Library features
 
-Bayesian Optimization (BO) is a sequential optimization technique that efficiently searches a hyperparameter space by using a surrogate model (e.g. Gaussian Process) to approximate a computationally expensive objective function. At each iteration, the algorithm selects the hyperparameters that maximize a pre-determined acquisition function (AF), which is chosen by the user to balance exploration and exploitation within the search space. The model then trains with the selected configuration, and its performance is used to adjust the surrogate model via Bayesian updating to make a more informed hyperparameter selection at the next iteration. This process continues until a stopping criterion is reached.
+Consider the general acquisition function $A(\theta)$, where $\theta$ represents the unknown hyperparameter configuration. 
 
 ---
 
