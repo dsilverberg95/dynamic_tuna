@@ -2,7 +2,7 @@
 
 **Dynamic Tuna** is a library of surrogate models that are compatible with the Optuna framework for performing Bayesian optimization on machine learning hyperparameters. The provided samplers are Gaussian Process, Random Forest, and Tree-structured Parzen Estimator. While most libraries allow for some degree of static control over the search process' exploitation-exploration tradeoff, Dynamic Tuna allows for multiple types of dynamic control.
 
-All explanations and usage examples below assume a degree of familiarity with Bayesian optimization.
+All explanations and usage examples will assume a degree of familiarity with Bayesian inference.
 
 ![Dynamic Tuna](https://img.shields.io/badge/bayesian-optimization-blue.svg) ![License](https://img.shields.io/badge/license-MIT-green)
 
