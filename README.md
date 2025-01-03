@@ -12,7 +12,7 @@ Consider the general acquisition function $A$ defined as $$A(\theta) = \mu(\thet
 
 ---
 
-## Randomness Injection
+## Randomness Injection Control
 
 In practice, choosing the configuration at each step that maximizes $A$ is done by evaluating $A$ at a huge number $m$ of configurations. All surrogate models enable the user to specify $m$ at each step, either as a constant or a function $m=g(n, t)$. Setting $m=1$ will perform random sampling, while setting $m$ to a large value will induce a more faithful adherence to the acquisition function. The choice of $m$ reflect's the user's confidence that the surrogate model resembles the objective function. The computations of $A$ are vectorized, so setting $m$ can be set as large as 10 million should not be problematic (unless your surrogate model is an extremely large/deep random forest). 
 
