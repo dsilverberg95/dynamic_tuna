@@ -16,7 +16,7 @@ Consider the general acquisition function $A$ defined as $$A(\theta) = \mu(\thet
 
 ## Dynamic Control Mechanisms
 
-In practice, choosing the configuration at each step that maximizes $A$ is done by evaluating $A$ at a huge number $m$ of configurations. Aside from manipulating $\xi$ as trials progress, the user can also choose the value of $m$ at each step, either specifying a constant value, or a function $n=g(n, t)$. 
+In practice, choosing the configuration at each step that maximizes $A$ is done by evaluating $A$ at a huge number $m$ of configurations. Aside from manipulating $\xi$ as trials progress, the user can also choose the value of $m$ at each step, either specifying a constant value, or a function $m=g(n, t)$. 
 
 ---
 
