@@ -20,6 +20,12 @@ The $m$ configurations at which $A$ is evaluated are selected via Sobol sampling
 
 ---
 
+## Supported Surrogate Models
+
+As previously stated, the user can choose between Gaussian Process, Random Forest, and Tree-based Parzen Estimator. Which surrogate the user selects should depends on their understanding of the search space, i.e. smoothness, presence of categorical dimensions, etc.
+
+---
+
 
 ## Installation
 
