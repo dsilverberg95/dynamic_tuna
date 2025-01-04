@@ -40,26 +40,34 @@ pip install -r requirements.txt
 
 ---
 
-## Example Usage
-Here’s a quick example to get you started with Dynamic Tuna.
+## Usage
+
+Here we provide two examples. The first demonstrates syntax, and the second shows how one could optimize ML hyperparameters.
 
 ```python
 import optuna
-from dynamic_tuna import GBTSampler
+from dynamic_tuna.samplers import GPSampler
 
-# Define search space
-search_space = {
-    "param1": optuna.distributions.UniformDistribution(0, 1),
-    "param2": optuna.distributions.IntUniformDistribution(1, 100)}
+def objective_function(trial):
+    x = trial.suggest_float('x', -1, 1) # specify argument and its domain
+    return x**2
 
-# Initialize sampler with dynamic EI candidates
-sampler = GBTSampler(search_space, n_ei_function=lambda n, a=1, b=2: a * n + b)
+sampler = GPSampler() # initialize sampler
 
 # Create and run study
-study = optuna.create_study(sampler=sampler)
-study.optimize(objective_function, n_trials=50)
-print("Best Parameters:", study.best_params)
+study = optuna.create_study(
+                            direction='minimize', # specify whether to maximize or minimize objective function
+                            sampler=sampler
+                            )
+
+study.optimize(
+               func = objective_function, 
+               n_trials = 10
+               )
+
+print("Best Argument:", study.best_params)
 ```
+
 ## Usage
 
 ---
