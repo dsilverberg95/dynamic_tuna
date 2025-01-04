@@ -18,13 +18,6 @@ In practice, choosing the configuration at each step that maximizes $A$ is done 
 
 ---
 
-## Supported Surrogate Models
-
-As previously stated, the user can choose between Gaussian Process, Random Forest, and Tree-based Parzen Estimator. Which surrogate the user selects should depends on their understanding of the search space (dimensionality, smoothness, presence of categoricals, etc.). As a general rule of thumb, a relatively smooth search space with dimensionality below 20 and without categorical variables is most efficiently modeled by Gaussian Process. For larger dimensionality or presence of categoricals, Random Forest or Tree-based Parzen Estimator should be used. Notably, GP does not support the presence of categorical variables, and using GP in such a case will generate an error. While Tree-based Parzen Estimator is more efficient than Random Forest, it is incapable of using correlation across dimensions of the search space. If the user suspects that this is important, then use Random Forest.
-
----
-
-
 ## Installation
 
 Clone the repository and install the required packages from `requirements.txt`:
@@ -40,26 +33,29 @@ pip install -r requirements.txt
 
 ---
 
-## Usage
+## Basic Usage
 
-Here we provide two examples. The first demonstrates syntax, and the second shows how one could optimize ML hyperparameters.
+Here's a minimalist example to demonstrate the library's essential syntax:
 
 ```python
 import optuna
 from dynamic_tuna.samplers import GPSampler
 
+# define function to optimize
 def objective_function(trial):
     x = trial.suggest_float('x', -1, 1) # specify argument and its domain
     return x**2
 
-sampler = GPSampler() # initialize sampler
+# instantiate surrogate model
+sampler = GPSampler() 
 
-# Create and run study
+# Create optimization process
 study = optuna.create_study(
                             direction='minimize', # specify whether to maximize or minimize objective function
                             sampler=sampler
                             )
 
+# Run optimization process
 study.optimize(
                func = objective_function, 
                n_trials = 10
@@ -68,7 +64,27 @@ study.optimize(
 print("Best Argument:", study.best_params)
 ```
 
-## Usage
+## Supported Surrogate Models
+
+As previously stated, the user can choose between Gaussian Process, Random Forest, and Tree-based Parzen Estimator. Which surrogate the user selects should depends on their understanding of the search space (dimensionality, smoothness, presence of categoricals, etc.). As a general rule of thumb, a relatively smooth search space with dimensionality below 20 and without categorical variables is most efficiently modeled by Gaussian Process. For larger dimensionality or presence of categoricals, Random Forest or Tree-based Parzen Estimator should be used. Notably, GP does not support the presence of categorical variables, and using GP in such a case will generate an error. While Tree-based Parzen Estimator is more efficient than Random Forest, it is incapable of using correlation across dimensions of the search space. If the user suspects that this is important, then use Random Forest.
+
+### Example with Gaussian Process Surrogate
+
+```python
+
+```
+
+### Example with Random Forest Surrogate
+
+```python
+
+```
+
+### Example with Tree-structured Parzen Estimator
+
+```python
+
+```
 
 ---
 
