@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 ## Basic Usage
 
-Here's a minimalist example to demonstrate the library's essential syntax. For information on defining a trial's search space, see https://optuna.readthedocs.io/en/stable/reference/generated/optuna.trial.Trial.html#optuna.trial.Trial:
+Below is an example to demonstrate the library's essential syntax. For information on defining a trial's search space, see https://optuna.readthedocs.io/en/stable/reference/generated/optuna.trial.Trial.html#optuna.trial.Trial:
 
 ```python
 import optuna
@@ -45,8 +45,24 @@ def objective_function(trial):
     x = trial.suggest_float('x', -1, 1) # specify argument and its domain
     return x**2
 
+# function specifying value of xi at each trial
+def linear_xi(n, xi_start=1, xi_end=0.01, n_max=100):
+    if n > n_max:
+        return xi_end
+    return max(xi_start + (xi_end - xi_start) * (n / n_max), 0)
+
+# function specifying, at each trial, number of candidates at which to evaluate acquisition function
+def quadratic_n_ei_candidates(n, n_ei_c_start=1, n_ei_c_end=1000000, n_max=100):
+    if n > n_max:
+        return n_ei_c_end
+    progress = (n / n_max) ** 2  # Quadratic growth
+    return max(round(n_ei_c_start + progress * (n_ei_c_end - n_ei_c_start)), 1)
+
 # instantiate surrogate model
-sampler = GPSampler() 
+sampler = GPSampler(xi_function=lambda n: linear_xi(n, xi_start=1.0, xi_end=0.01, n_max=n_param_samples),
+                    n_function=lambda n: quadratic_n_ei_candidates(n, n_ei_c_start=1, n_ei_c_end=1000, n_max=n_param_samples),
+                    kernel = {"Matern": {"nu": 1.5, "length_scale": 3.0},
+                              "Noise": {"noise_level": 2.0}})
 
 # Create optimization process
 study = optuna.create_study(
