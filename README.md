@@ -40,27 +40,25 @@ Here's an example to demonstrate the library's syntax. For information on defini
 import optuna
 from dynamic_tuna.samplers import GPSampler
 
+total_trials = 100
+
 # define function to optimize
 def objective_function(trial):
     x = trial.suggest_float('x', -1, 1) # specify argument and its domain
     return x**2
 
 # function specifying value of xi at each trial
-def linear_xi(n, xi_start=1, xi_end=0.01, n_max=100):
-    if n > n_max:
-        return xi_end
+def linear_xi(n, xi_start=1, xi_end=0.01, n_max=total_trials):
     return max(xi_start + (xi_end - xi_start) * (n / n_max), 0)
 
 # function specifying, at each trial, number of candidates at which to evaluate acquisition function
-def quadratic_n_ei_candidates(n, n_ei_c_start=1, n_ei_c_end=1000000, n_max=100):
-    if n > n_max:
-        return n_ei_c_end
+def quadratic_n_ei_candidates(n, n_ei_c_start=1, n_ei_c_end=1000000, n_max=total_trials):
     progress = (n / n_max) ** 2  # Quadratic growth
     return max(round(n_ei_c_start + progress * (n_ei_c_end - n_ei_c_start)), 1)
 
 # instantiate surrogate model
-sampler = GPSampler(xi_function=lambda n: linear_xi(n, xi_start=1.0, xi_end=0.01, n_max=n_param_samples),
-                    n_function=lambda n: quadratic_n_ei_candidates(n, n_ei_c_start=1, n_ei_c_end=1000, n_max=n_param_samples),
+sampler = GPSampler(xi_function=lambda n: linear_xi(n, xi_start=1.0, xi_end=0.01, n_max=total_trials),
+                    n_function=lambda n: quadratic_n_ei_candidates(n, n_ei_c_start=1, n_ei_c_end=1000, n_max=total_trials),
                     kernel = {"Matern": {"nu": 1.5, "length_scale": 3.0},
                               "Noise": {"noise_level": 2.0}})
 
@@ -70,7 +68,7 @@ study = optuna.create_study(direction='maximize', # specify whether to maximize 
 
 # Run optimization process
 study.optimize(func = objective_function, 
-               n_trials = 10)
+               n_trials = total_trials)
 
 print("Best Argument:", study.best_params)
 ```
