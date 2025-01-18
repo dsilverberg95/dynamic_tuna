@@ -55,7 +55,7 @@ def linear_xi(n, xi_start=1, xi_end=0.01, n_max=total_trials):
 def quadratic_n_ei_candidates(n, n_ei_c_start=1, n_ei_c_end=1000000, n_max=total_trials):
     return max(round(n_ei_c_start + ((n / n_max) ** 2) * (n_ei_c_end - n_ei_c_start)), 1)
 
-# instantiate surrogate model
+# instantiate surrogate model, specifying kernel in the case of GP
 sampler = GPSampler(xi_function=lambda n: linear_xi(n, xi_start=1.0, xi_end=0.01, n_max=total_trials),
                     n_function=lambda n: quadratic_n_ei_candidates(n, n_ei_c_start=1, n_ei_c_end=1000, n_max=total_trials),
                     kernel = {"Matern": {"nu": 1.5, "length_scale": 3.0},
