@@ -66,7 +66,7 @@ sampler = GPSampler(xi_function=lambda n: linear_xi(n, xi_start=1.0, xi_end=0.01
 
 # Create optimization process
 study = optuna.create_study(
-                            direction='minimize', # specify whether to maximize or minimize objective function
+                            direction='maximize', # specify whether to maximize or minimize objective function
                             sampler=sampler
                             )
 
