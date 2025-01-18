@@ -53,8 +53,7 @@ def linear_xi(n, xi_start=1, xi_end=0.01, n_max=total_trials):
 
 # function specifying, at each trial, number of candidates at which to evaluate acquisition function
 def quadratic_n_ei_candidates(n, n_ei_c_start=1, n_ei_c_end=1000000, n_max=total_trials):
-    progress = (n / n_max) ** 2  # Quadratic growth
-    return max(round(n_ei_c_start + progress * (n_ei_c_end - n_ei_c_start)), 1)
+    return max(round(n_ei_c_start + ((n / n_max) ** 2) * (n_ei_c_end - n_ei_c_start)), 1)
 
 # instantiate surrogate model
 sampler = GPSampler(xi_function=lambda n: linear_xi(n, xi_start=1.0, xi_end=0.01, n_max=total_trials),
