@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 ## Basic Usage
 
-Here's a minimalist example to demonstrate the library's essential syntax:
+Here's a minimalist example to demonstrate the library's essential syntax. For information on defining a trial's search space, see https://optuna.readthedocs.io/en/stable/reference/generated/optuna.trial.Trial.html#optuna.trial.Trial:
 
 ```python
 import optuna
