@@ -28,7 +28,6 @@ cd dynamic_tuna
 pip install -r requirements.txt
 
 
-	Note: This library requires Python 3.8+.
 ```
 
 ---
