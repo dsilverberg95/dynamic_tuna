@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 ## Basic Usage
 
-Below is an example to demonstrate the library's essential syntax. For information on defining a trial's search space, see https://optuna.readthedocs.io/en/stable/reference/generated/optuna.trial.Trial.html#optuna.trial.Trial:
+Here's an example to demonstrate the library's syntax. For information on defining a trial's search space, see https://optuna.readthedocs.io/en/stable/reference/generated/optuna.trial.Trial.html#optuna.trial.Trial:
 
 ```python
 import optuna
@@ -65,16 +65,12 @@ sampler = GPSampler(xi_function=lambda n: linear_xi(n, xi_start=1.0, xi_end=0.01
                               "Noise": {"noise_level": 2.0}})
 
 # Create optimization process
-study = optuna.create_study(
-                            direction='maximize', # specify whether to maximize or minimize objective function
-                            sampler=sampler
-                            )
+study = optuna.create_study(direction='maximize', # specify whether to maximize or minimize objective function
+                            sampler=sampler)
 
 # Run optimization process
-study.optimize(
-               func = objective_function, 
-               n_trials = 10
-               )
+study.optimize(func = objective_function, 
+               n_trials = 10)
 
 print("Best Argument:", study.best_params)
 ```
