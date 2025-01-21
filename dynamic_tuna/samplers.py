@@ -1,4 +1,4 @@
-from .utils import hyperparam_candidate_generator
+from .utils import hyperparam_candidate_generator, parse_kernel
 import numpy as np
 import optuna
 from optuna.samplers import BaseSampler, TPESampler
@@ -13,23 +13,27 @@ class GPSampler(BaseSampler):
     def __init__(self, 
                  xi=0.01, 
                  xi_function=None, 
-                 n_candidates=1000000,
-                 kernel=None):
+                 n_candidates=1000000, 
+                 n_function=None, 
+                 kernel={"Matern": {"nu": 2.5}}):
         """
         Gaussian Process-based sampler for Optuna with dynamic exploration-exploitation trade-off.
 
         Args:
             xi (float): Initial value of xi for acquisition function.
             xi_function (function): Function to dynamically control xi, taking the current trial number as input.
-            kernel (object): Kernel for the Gaussian Process. Defaults to Matern.
+            n_candidates (int): Initial number of candidates for Expected Improvement (EI) calculation.
+            n_function (function): Function to dynamically control the number of candidates, 
+                                   taking the current trial number as input.
+            kernel (dict): Dictionary defining a composite kernel. If None, defaults to {"Matern": {"nu": 2.5}}.
         """
         self.xi = xi
         self.xi_function = xi_function or (lambda n: xi)  # Default to static xi if no function is provided
-        self.kernel = kernel or Matern(nu=2.5)
+        self.n_candidates = n_candidates
+        self.n_function = n_function or (lambda n: n_candidates)  # Default to static n_candidates if no function
+        self.kernel = parse_kernel(kernel)
         self.gp = GaussianProcessRegressor(kernel=self.kernel, normalize_y=True)
         self._rng = np.random.RandomState()
-        self.maximize = False  # Default to minimization; will be updated dynamically.
-        self.n_candidates = n_candidates
 
     def infer_relative_search_space(self, study, trial):
         return optuna.search_space.intersection_search_space(
@@ -37,23 +41,15 @@ class GPSampler(BaseSampler):
         )
 
     def sample_relative(self, study, trial, search_space):
-        # Determine whether to maximize or minimize based on study direction
-        print('Relative sampling search space: ')
-        for i in search_space:
-            print(i)
-        if study.direction == optuna.study.StudyDirection.MAXIMIZE:
-            self.maximize = True
-        else:
-            self.maximize = False
-
-        if len(study.trials) < 2:  # GPR needs data to train
+        if len(study.trials) < 3:  # GPR needs data to train
             return {k: self._rng.uniform(v.low, v.high) for k, v in search_space.items()}
 
         completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
         n = len(completed_trials)
 
-        # Dynamically adjust xi if a function is provided
+        # Dynamically adjust xi and n_candidates if functions are provided
         current_xi = self.xi_function(n)
+        current_n_candidates = self.n_function(n)
 
         X = []
         y = []
@@ -71,15 +67,19 @@ class GPSampler(BaseSampler):
         param_names = list(search_space.keys())
         param_distributions = [search_space[name] for name in param_names]
 
-        # Generate candidates
-        candidates = hyperparam_candidate_generator(param_distributions, self.n_candidates)
+        # Generate candidates dynamically based on current_n_candidates
+        candidates = hyperparam_candidate_generator(param_distributions, current_n_candidates)
 
         # Predict mean and standard deviation for candidates
         mu, sigma = self.gp.predict(candidates, return_std=True)
-        best_y = y.max() if self.maximize else y.min()  # Adjust for direction
+        y_best = max(y) if study.direction == optuna.study.StudyDirection.MAXIMIZE else min(y)
 
         # Calculate Expected Improvement (EI) based on direction
-        improvement = (mu - best_y - current_xi) if self.maximize else (best_y - mu - current_xi)
+        if study.direction == optuna.study.StudyDirection.MAXIMIZE:
+            improvement = mu - y_best - current_xi
+        else:  # Minimizing
+            improvement = y_best - mu - current_xi
+
         Z = improvement / sigma
         ei = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
 
@@ -104,6 +104,7 @@ class RFSampler(BaseSampler):
                  xi=0.01, 
                  xi_function=None, 
                  n_candidates=1000000,
+                 n_function=None, 
                  n_estimators=100,
                  max_depth=None):
         """
@@ -112,16 +113,19 @@ class RFSampler(BaseSampler):
         Args:
             xi (float): Initial value of xi for acquisition function.
             xi_function (function): Function to dynamically control xi, taking the current trial number as input.
-            n_candidates (int): Number of candidate points for acquisition function evaluation.
+            n_candidates (int): Initial number of candidate points for acquisition function evaluation.
+            n_function (function): Function to dynamically control the number of candidates, 
+                                   taking the current trial number as input.
             n_estimators (int): Number of trees in the Random Forest model.
             max_depth (int): Maximum depth of the Random Forest model. Defaults to None (unlimited depth).
         """
         self.xi = xi
         self.xi_function = xi_function or (lambda n: xi)
+        self.n_candidates = n_candidates
+        self.n_function = n_function or (lambda n: n_candidates)  # Default to static n_candidates if no function
         self.rf = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, random_state=0)
         self._rng = np.random.RandomState()
         self.maximize = False
-        self.n_candidates = n_candidates
 
     def infer_relative_search_space(self, study, trial):
         return optuna.search_space.intersection_search_space(
@@ -130,9 +134,6 @@ class RFSampler(BaseSampler):
 
     def sample_relative(self, study, trial, search_space):
         # Determine whether to maximize or minimize based on study direction
-        print('Relative sampling search space: ')
-        for i in search_space:
-            print(i)
         if study.direction == optuna.study.StudyDirection.MAXIMIZE:
             self.maximize = True
         else:
@@ -144,8 +145,9 @@ class RFSampler(BaseSampler):
         completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
         n = len(completed_trials)
 
-        # Dynamically adjust xi if a function is provided
+        # Dynamically adjust xi and n_candidates if functions are provided
         current_xi = self.xi_function(n)
+        current_n_candidates = self.n_function(n)
 
         X = []
         y = []
@@ -164,8 +166,8 @@ class RFSampler(BaseSampler):
         param_names = list(search_space.keys())
         param_distributions = [search_space[name] for name in param_names]
 
-        # Generate candidates
-        candidates = hyperparam_candidate_generator(param_distributions, self.n_candidates)
+        # Generate candidates dynamically based on current_n_candidates
+        candidates = hyperparam_candidate_generator(param_distributions, current_n_candidates)
 
         # Predict mean and standard deviation for candidates
         mu = self.rf.predict(candidates)
